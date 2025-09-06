@@ -1,6 +1,7 @@
 import './globals.css';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
+import FAB from '../components/FAB';
 import type { ReactNode } from 'react';
 
 export const metadata = {
@@ -15,8 +16,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Sidebar />
         <div className="flex flex-1 flex-col">
           <Navbar />
-          <main className="flex-1 p-4 overflow-y-auto">{children}</main>
+          <main className="flex-1 p-4 pb-24 md:pb-4 overflow-y-auto">{children}</main>
         </div>
+        <FAB />
       </body>
     </html>
   );
