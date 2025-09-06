@@ -2,14 +2,24 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 export default function NoteEditor({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [content, setContent] = useState('');
 
   const handleSave = async () => {
+    if (!auth.currentUser) {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch (err) {
+        console.error('Sign-in required to save note', err);
+        alert('You must sign in to save notes');
+        return;
+      }
+    }
     const id = params.id === 'new' ? Date.now().toString() : params.id;
     const note = {
       id,
