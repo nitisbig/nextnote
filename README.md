@@ -12,15 +12,14 @@ Modern note-taking frontend built with Next.js 14 (App Router) and Tailwind CSS.
 
 ## Environment Variables
 
-Create a `.env.local` file (or copy from `.env.example`) and provide the following variables:
+Create a `.env.local` file (or copy from `.env.example`) and provide the following variables for Appwrite:
 
 ```
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_APPWRITE_ENDPOINT=
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=
+NEXT_PUBLIC_APPWRITE_API_KEY=
+NEXT_PUBLIC_APPWRITE_DATABASE_ID=
+NEXT_PUBLIC_APPWRITE_COLLECTION_ID=
 ```
 
 ## Development

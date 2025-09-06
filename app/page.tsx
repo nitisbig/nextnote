@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import NoteCard from "../components/NoteCard";
-import { db } from "../lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { databases } from "../lib/appwrite";
+import type { Models } from "appwrite";
 
 interface Note {
   id: string;
@@ -15,16 +15,18 @@ interface Note {
 
 export default function Home() {
   const [notes, setNotes] = useState<Note[]>([]);
+  const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string;
+  const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID as string;
 
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "notes"));
-        const fetched: Note[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          title: (doc.data().title as string) || "Untitled",
-          preview: (doc.data().preview as string) || "",
-          updatedAt: (doc.data().updatedAt as string) || "",
+        const res = await databases.listDocuments(databaseId, collectionId);
+        const fetched: Note[] = res.documents.map((doc: Models.Document) => ({
+          id: doc.$id,
+          title: (doc.title as string) || "Untitled",
+          preview: (doc.preview as string) || "",
+          updatedAt: (doc.updatedAt as string) || "",
           status: "saved",
         }));
         setNotes(fetched);
