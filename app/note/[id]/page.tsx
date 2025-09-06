@@ -2,14 +2,25 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { db } from '../../../lib/firebase';
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 
 export default function NoteEditor({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [content, setContent] = useState('');
 
-  const handleSave = () => {
-    // Save note logic goes here
-    router.push('/');
+  const handleSave = async () => {
+    const noteData = { content };
+    try {
+      if (params.id === 'new') {
+        await addDoc(collection(db, 'notes'), noteData);
+      } else {
+        await setDoc(doc(db, 'notes', params.id), noteData, { merge: true });
+      }
+      router.push('/');
+    } catch (err) {
+      console.error('Error saving note', err);
+    }
   };
 
   const handleDelete = () => {
