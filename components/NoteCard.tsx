@@ -8,9 +8,10 @@ interface NoteCardProps {
   title: string;
   preview: string;
   updatedAt: string;
+  status: 'saved' | 'failed';
 }
 
-export default function NoteCard({ id, title, preview, updatedAt }: NoteCardProps) {
+export default function NoteCard({ id, title, preview, updatedAt, status }: NoteCardProps) {
   const [startX, setStartX] = useState<number | null>(null);
   const [showActions, setShowActions] = useState(false);
 
@@ -58,7 +59,14 @@ export default function NoteCard({ id, title, preview, updatedAt }: NoteCardProp
         <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-2 overflow-hidden text-ellipsis">
           {preview}
         </p>
-        <span className="text-xs text-gray-500">{updatedAt}</span>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">{updatedAt}</span>
+          <span
+            className={`text-lg ${status === 'saved' ? 'text-blue-500' : 'text-red-500'}`}
+          >
+            ✓
+          </span>
+        </div>
       </Link>
     </div>
   );
