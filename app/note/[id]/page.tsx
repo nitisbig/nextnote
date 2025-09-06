@@ -10,17 +10,31 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
   const [content, setContent] = useState('');
 
   const handleSave = async () => {
-    const noteData = { content };
+    const note = {
+      id: params.id === 'new' ? Date.now().toString() : params.id,
+      title: content.split('\n')[0] || 'Untitled',
+      preview: content.slice(0, 100),
+      updatedAt: new Date().toISOString().split('T')[0],
+      status: 'saved' as 'saved' | 'failed',
+    };
+
     try {
       if (params.id === 'new') {
-        await addDoc(collection(db, 'notes'), noteData);
+        const docRef = await addDoc(collection(db, 'notes'), { content });
+        note.id = docRef.id;
       } else {
-        await setDoc(doc(db, 'notes', params.id), noteData, { merge: true });
+        await setDoc(doc(db, 'notes', params.id), { content }, { merge: true });
       }
-      router.push('/');
     } catch (err) {
       console.error('Error saving note', err);
+      alert('Failed to save note');
+      note.status = 'failed';
     }
+
+    const stored = JSON.parse(localStorage.getItem('notes') || '[]');
+    const updatedNotes = [...stored.filter((n: any) => n.id !== note.id), note];
+    localStorage.setItem('notes', JSON.stringify(updatedNotes));
+    router.push('/');
   };
 
   const handleDelete = () => {

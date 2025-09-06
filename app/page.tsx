@@ -1,24 +1,29 @@
-import NoteCard from '../components/NoteCard';
+"use client";
 
-const mockNotes = [
-  {
-    id: '1',
-    title: 'Welcome to NextNote',
-    preview: 'This is an example note. Start writing your thoughts... ',
-    updatedAt: '2023-10-05',
-  },
-  {
-    id: '2',
-    title: 'Another Note',
-    preview: 'Notes support **markdown** formatting.',
-    updatedAt: '2023-10-06',
-  },
-];
+import { useEffect, useState } from "react";
+import NoteCard from "../components/NoteCard";
+
+interface Note {
+  id: string;
+  title: string;
+  preview: string;
+  updatedAt: string;
+  status: "saved" | "failed";
+}
 
 export default function Home() {
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("notes");
+    if (stored) {
+      setNotes(JSON.parse(stored));
+    }
+  }, []);
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {mockNotes.map((note) => (
+      {notes.map((note) => (
         <NoteCard key={note.id} {...note} />
       ))}
     </div>
