@@ -3,15 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '../../../lib/firebase';
-import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function NoteEditor({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [content, setContent] = useState('');
 
   const handleSave = async () => {
+    const id = params.id === 'new' ? Date.now().toString() : params.id;
     const note = {
-      id: params.id === 'new' ? Date.now().toString() : params.id,
+      id,
       title: content.split('\n')[0] || 'Untitled',
       preview: content.slice(0, 100),
       updatedAt: new Date().toISOString().split('T')[0],
@@ -19,12 +20,16 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
     };
 
     try {
-      if (params.id === 'new') {
-        const docRef = await addDoc(collection(db, 'notes'), { content });
-        note.id = docRef.id;
-      } else {
-        await setDoc(doc(db, 'notes', params.id), { content }, { merge: true });
-      }
+      await setDoc(
+        doc(db, 'notes', id),
+        {
+          content,
+          title: note.title,
+          preview: note.preview,
+          updatedAt: note.updatedAt,
+        },
+        { merge: true }
+      );
     } catch (err) {
       console.error('Error saving note', err);
       alert('Failed to save note');
