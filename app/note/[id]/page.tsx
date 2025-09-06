@@ -2,9 +2,8 @@
 
 import { MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, auth } from '../../../lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { databases, databaseId, collectionId } from '../../../lib/appwrite';
+import { ID } from 'appwrite';
 
 export default function NoteEditor({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -16,16 +15,7 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
 
   const handleSave = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (!auth.currentUser) {
-      try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-      } catch (err) {
-        console.error('Sign-in required to save note', err);
-        alert('You must sign in to save notes');
-        return;
-      }
-    }
-    const id = params.id === 'new' ? Date.now().toString() : params.id;
+    const id = params.id === 'new' ? ID.unique() : params.id;
     const note = {
       id,
       title: content.split('\n')[0] || 'Untitled',
@@ -35,16 +25,21 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
     };
 
     try {
-      await setDoc(
-        doc(db, 'notes', id),
-        {
+      if (params.id === 'new') {
+        await databases.createDocument(databaseId, collectionId, id, {
           content,
           title: note.title,
           preview: note.preview,
           updatedAt: note.updatedAt,
-        },
-        { merge: true }
-      );
+        });
+      } else {
+        await databases.updateDocument(databaseId, collectionId, id, {
+          content,
+          title: note.title,
+          preview: note.preview,
+          updatedAt: note.updatedAt,
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('Error saving note', err);

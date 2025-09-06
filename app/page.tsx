@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import NoteCard from "../components/NoteCard";
-import { db } from "../lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { databases, databaseId, collectionId } from "../lib/appwrite";
 
 interface Note {
   id: string;
@@ -19,12 +18,12 @@ export default function Home() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "notes"));
-        const fetched: Note[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          title: (doc.data().title as string) || "Untitled",
-          preview: (doc.data().preview as string) || "",
-          updatedAt: (doc.data().updatedAt as string) || "",
+        const result = await databases.listDocuments(databaseId, collectionId);
+        const fetched: Note[] = result.documents.map((doc) => ({
+          id: doc.$id,
+          title: (doc.title as string) || "Untitled",
+          preview: (doc.preview as string) || "",
+          updatedAt: (doc.updatedAt as string) || "",
           status: "saved",
         }));
         setNotes(fetched);
