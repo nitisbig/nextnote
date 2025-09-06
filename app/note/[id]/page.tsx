@@ -9,6 +9,10 @@ import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 export default function NoteEditor({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [content, setContent] = useState('');
+  const logErrorToAnalytics = (error: unknown) => {
+    // In production, send error details to an analytics service for debugging
+    console.log('Analytics log:', error);
+  };
 
   const handleSave = async () => {
     if (!auth.currentUser) {
@@ -41,8 +45,10 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
         { merge: true }
       );
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       console.error('Error saving note', err);
-      alert('Failed to save note');
+      logErrorToAnalytics(err);
+      alert(`Failed to save note: ${message}`);
       note.status = 'failed';
     }
 
