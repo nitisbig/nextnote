@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -14,7 +14,8 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
     console.log('Analytics log:', error);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (!auth.currentUser) {
       try {
         await signInWithPopup(auth, new GoogleAuthProvider());
@@ -73,12 +74,14 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
       />
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={handleSave}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           Save
         </button>
         <button
+          type="button"
           onClick={handleDelete}
           className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
