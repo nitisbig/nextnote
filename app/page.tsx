@@ -10,6 +10,7 @@ interface Note {
   preview: string;
   updatedAt: string;
   status: "saved" | "failed";
+  content?: string;
 }
 
 export default function Home() {
@@ -32,6 +33,7 @@ export default function Home() {
             preview: (doc.preview as string) || "",
             updatedAt: (doc.updatedAt as string) || "",
             status: "saved",
+            content: (doc.content as string) || "",
           }));
           setNotes(fetched);
           localStorage.setItem("notes", JSON.stringify(fetched));

@@ -1,6 +1,6 @@
 'use client';
 
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { databases, databaseId, collectionId } from '../../../lib/appwrite';
 import { ID } from 'appwrite';
@@ -13,6 +13,33 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
     console.log('Analytics log:', error);
   };
 
+  useEffect(() => {
+    const loadNote = async () => {
+      if (params.id === 'new') return;
+      const hasAppwriteConfig =
+        process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT &&
+        process.env.NEXT_PUBLIC_APPWRITE_PROJECT &&
+        databaseId &&
+        collectionId;
+
+      try {
+        if (hasAppwriteConfig) {
+          const doc = await databases.getDocument(databaseId, collectionId, params.id);
+          setContent((doc.content as string) || '');
+        } else {
+          const stored = JSON.parse(localStorage.getItem('notes') || '[]');
+          const existing = stored.find((n: any) => n.id === params.id);
+          if (existing && existing.content) {
+            setContent(existing.content);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load note', err);
+      }
+    };
+    loadNote();
+  }, [params.id]);
+
   const handleSave = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const id = params.id === 'new' ? ID.unique() : params.id;
@@ -22,6 +49,7 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
       preview: content.slice(0, 100),
       updatedAt: new Date().toISOString().split('T')[0],
       status: 'saved' as 'saved' | 'failed',
+      content,
     };
 
     const hasAppwriteConfig =
