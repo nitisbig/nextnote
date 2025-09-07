@@ -58,26 +58,25 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
       databaseId &&
       collectionId;
 
-    if (!hasAppwriteConfig) {
-      alert('Appwrite configuration missing. Note was not saved.');
-      return;
-    }
-
     try {
-      if (params.id === 'new') {
-        await databases.createDocument(databaseId, collectionId, id, {
-          content,
-          title: note.title,
-          preview: note.preview,
-          updatedAt: note.updatedAt,
-        });
+      if (hasAppwriteConfig) {
+        if (params.id === 'new') {
+          await databases.createDocument(databaseId, collectionId, id, {
+            content,
+            title: note.title,
+            preview: note.preview,
+            updatedAt: note.updatedAt,
+          });
+        } else {
+          await databases.updateDocument(databaseId, collectionId, id, {
+            content,
+            title: note.title,
+            preview: note.preview,
+            updatedAt: note.updatedAt,
+          });
+        }
       } else {
-        await databases.updateDocument(databaseId, collectionId, id, {
-          content,
-          title: note.title,
-          preview: note.preview,
-          updatedAt: note.updatedAt,
-        });
+        console.warn('Appwrite configuration missing. Saving note locally.');
       }
 
       const stored = JSON.parse(localStorage.getItem('notes') || '[]');
@@ -88,6 +87,10 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('Error saving note', err);
       logErrorToAnalytics(err);
+      const stored = JSON.parse(localStorage.getItem('notes') || '[]');
+      const failedNote = { ...note, status: 'failed' as const };
+      const updatedNotes = [...stored.filter((n: any) => n.id !== failedNote.id), failedNote];
+      localStorage.setItem('notes', JSON.stringify(updatedNotes));
       alert(`Failed to save note: ${message}`);
     }
   };
