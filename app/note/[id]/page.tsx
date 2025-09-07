@@ -58,39 +58,38 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
       databaseId &&
       collectionId;
 
+    if (!hasAppwriteConfig) {
+      alert('Appwrite configuration missing. Note was not saved.');
+      return;
+    }
+
     try {
-      if (hasAppwriteConfig) {
-        if (params.id === 'new') {
-          await databases.createDocument(databaseId, collectionId, id, {
-            content,
-            title: note.title,
-            preview: note.preview,
-            updatedAt: note.updatedAt,
-          });
-        } else {
-          await databases.updateDocument(databaseId, collectionId, id, {
-            content,
-            title: note.title,
-            preview: note.preview,
-            updatedAt: note.updatedAt,
-          });
-        }
+      if (params.id === 'new') {
+        await databases.createDocument(databaseId, collectionId, id, {
+          content,
+          title: note.title,
+          preview: note.preview,
+          updatedAt: note.updatedAt,
+        });
       } else {
-        // Appwrite isn't configured; skip remote save and rely on local storage.
-        console.warn('Appwrite configuration missing. Saving note locally only.');
+        await databases.updateDocument(databaseId, collectionId, id, {
+          content,
+          title: note.title,
+          preview: note.preview,
+          updatedAt: note.updatedAt,
+        });
       }
+
+      const stored = JSON.parse(localStorage.getItem('notes') || '[]');
+      const updatedNotes = [...stored.filter((n: any) => n.id !== note.id), note];
+      localStorage.setItem('notes', JSON.stringify(updatedNotes));
+      router.push('/');
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('Error saving note', err);
       logErrorToAnalytics(err);
       alert(`Failed to save note: ${message}`);
-      note.status = 'failed';
     }
-
-    const stored = JSON.parse(localStorage.getItem('notes') || '[]');
-    const updatedNotes = [...stored.filter((n: any) => n.id !== note.id), note];
-    localStorage.setItem('notes', JSON.stringify(updatedNotes));
-    router.push('/');
   };
 
   const handleDelete = () => {

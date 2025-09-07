@@ -40,14 +40,16 @@ export default function Home() {
         } else {
           const stored = localStorage.getItem("notes");
           if (stored) {
-            setNotes(JSON.parse(stored));
+            const parsed: Note[] = JSON.parse(stored);
+            setNotes(parsed.filter((n) => n.status === "saved"));
           }
         }
       } catch (err) {
         console.error("Failed to fetch notes", err);
         const stored = localStorage.getItem("notes");
         if (stored) {
-          setNotes(JSON.parse(stored));
+          const parsed: Note[] = JSON.parse(stored);
+          setNotes(parsed.filter((n) => n.status === "saved"));
         }
       }
     };
