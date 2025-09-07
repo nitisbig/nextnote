@@ -17,17 +17,30 @@ export default function Home() {
 
   useEffect(() => {
     const fetchNotes = async () => {
+      const hasAppwriteConfig =
+        process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT &&
+        process.env.NEXT_PUBLIC_APPWRITE_PROJECT &&
+        databaseId &&
+        collectionId;
+
       try {
-        const result = await databases.listDocuments(databaseId, collectionId);
-        const fetched: Note[] = result.documents.map((doc) => ({
-          id: doc.$id,
-          title: (doc.title as string) || "Untitled",
-          preview: (doc.preview as string) || "",
-          updatedAt: (doc.updatedAt as string) || "",
-          status: "saved",
-        }));
-        setNotes(fetched);
-        localStorage.setItem("notes", JSON.stringify(fetched));
+        if (hasAppwriteConfig) {
+          const result = await databases.listDocuments(databaseId, collectionId);
+          const fetched: Note[] = result.documents.map((doc) => ({
+            id: doc.$id,
+            title: (doc.title as string) || "Untitled",
+            preview: (doc.preview as string) || "",
+            updatedAt: (doc.updatedAt as string) || "",
+            status: "saved",
+          }));
+          setNotes(fetched);
+          localStorage.setItem("notes", JSON.stringify(fetched));
+        } else {
+          const stored = localStorage.getItem("notes");
+          if (stored) {
+            setNotes(JSON.parse(stored));
+          }
+        }
       } catch (err) {
         console.error("Failed to fetch notes", err);
         const stored = localStorage.getItem("notes");
