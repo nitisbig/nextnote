@@ -24,21 +24,32 @@ export default function NoteEditor({ params }: { params: { id: string } }) {
       status: 'saved' as 'saved' | 'failed',
     };
 
+    const hasAppwriteConfig =
+      process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT &&
+      process.env.NEXT_PUBLIC_APPWRITE_PROJECT &&
+      databaseId &&
+      collectionId;
+
     try {
-      if (params.id === 'new') {
-        await databases.createDocument(databaseId, collectionId, id, {
-          content,
-          title: note.title,
-          preview: note.preview,
-          updatedAt: note.updatedAt,
-        });
+      if (hasAppwriteConfig) {
+        if (params.id === 'new') {
+          await databases.createDocument(databaseId, collectionId, id, {
+            content,
+            title: note.title,
+            preview: note.preview,
+            updatedAt: note.updatedAt,
+          });
+        } else {
+          await databases.updateDocument(databaseId, collectionId, id, {
+            content,
+            title: note.title,
+            preview: note.preview,
+            updatedAt: note.updatedAt,
+          });
+        }
       } else {
-        await databases.updateDocument(databaseId, collectionId, id, {
-          content,
-          title: note.title,
-          preview: note.preview,
-          updatedAt: note.updatedAt,
-        });
+        // Appwrite isn't configured; skip remote save and rely on local storage.
+        console.warn('Appwrite configuration missing. Saving note locally only.');
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
